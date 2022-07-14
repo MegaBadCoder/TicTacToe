@@ -96,7 +96,6 @@ canvas.addEventListener("click", e => {
 
 startBtn.addEventListener("click", (e) => {
     startNewGame();
-    console.log(e);
 });
 
 const showWinner = (winnerIndex) => {
@@ -232,7 +231,7 @@ const crossOutRow = async (indexCol) => {
     });
 }
 
-const crossOutDiagonally = async (leftDown = false) => {
+const crossOutDiagonally = async (leftDown: Boolean = false) => {
     const startCoords: number[] = leftDown ? [0, 0] : [width, 0];
     const endCoords: number[] = leftDown ? [width, height] : [0, height];
     ctx.strokeStyle = colors.grid; 
@@ -243,14 +242,13 @@ const crossOutDiagonally = async (leftDown = false) => {
         duration: timeAnimationCross,
         timing: circ,
         draw: (progress: number): void => {
-            // console.log(endCoords[1] )
-            ctx.lineTo(endCoords[0], endCoords[1]);
+            const x = leftDown ? endCoords[0] * progress : width - (width * progress);
+            const y =    endCoords[1] * progress
+            ctx.lineTo(x, y);
             ctx.stroke();
         },
     });   
 }
-
-
 
 const drawTic: DrawAFigure = ([x, y]) => {
     ctx.strokeStyle = colors.tic; 
