@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "lib": ["ES2022"],
+    "module": "commonjs",
+    "outDir": "dist",
+    "sourceMap": true,
+    "strict": true,
+    "target": "ES2015",
+    "noImplicitAny": true
+  },
+  "include": ["src"]
+}

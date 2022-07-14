@@ -1,0 +1,14 @@
+{
+  "name": "TicTacToeTs",
+  "version": "0.1",
+  "main": "index.js",
+  "author": "i.seliverstov",
+  "license": "MIT",
+  "scripts": {
+    "start-parcel": "yarn parcel index.html"
+  },
+  "devDependencies": {
+    "parcel-bundler": "^1.12.5",
+    "typescript": "^4.7.4"
+  }
+}

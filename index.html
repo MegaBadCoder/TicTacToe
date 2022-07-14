@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style type="text/css">
+        .playing-field {
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            justify-content: center;
+            width: 600px;
+            margin: auto;
+        }
+        #start-new-game-btn {
+            width: 100%;
+            margin-top: 20px;
+            height: 34px;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+    <div class="playing-field">
+        <canvas id="game" width="600" height="600"></canvas>
+        <button id="start-new-game-btn">Start over</button>
+    </div><script src="./src/index.ts"></script>
+</body>
+</html>
