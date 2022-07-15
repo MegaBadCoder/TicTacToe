@@ -1,14 +1,17 @@
+import { animate, circ } from './animate';
+import { transposeMatrix } from './helpers';
+import { Game } from './Game';
+
 const canvas = document.querySelector('#game') as HTMLCanvasElement;
 const startBtn = document.querySelector('#start-new-game-btn') as HTMLCanvasElement;
 const width = canvas.width;
 const height = canvas.height;
 const ctx = canvas.getContext("2d");
-
 const TILE_SIZE = width / 3;
 const TILES_X = width / TILE_SIZE;
 const TILES_Y = height / TILE_SIZE;
 const timeAnimationCross = 500;
-const figures = ['Нолики', 'Крестики']
+const figures = ['Нолики', 'Крестики'];
 const colors = {
     grid: "rgb(90, 90, 90)",
     tic: '#000',
@@ -163,19 +166,6 @@ const winCheck = () => {
     return false;
 }
 
-const transposeMatrix = (matrix: number[][]): number[][] => {
-    const result = new Array(matrix.length);
-    for (let i = 0; i < matrix.length; ++i) {
-      result[i] = new Array(matrix[0].length);
-    }
-    for (let i = 0; i < matrix.length; ++i) {
-      for (let j = 0; j < matrix[0].length; ++j) {
-        result[j][i] = matrix[i][j];
-      }
-    }
-    return result;
-};
-
 drawBorders();
 
 const createAPlayingFieldMatrix = () => {
@@ -280,35 +270,4 @@ const drawToc: DrawAFigure = ([x, y]) => {
 
 createAPlayingFieldMatrix();
 
-
-function animate({ duration, draw, timing }) {
-    return new Promise((resolve) => {
-        const start = performance.now();
-
-        requestAnimationFrame(function animate(time) {
-            let timeFraction = (time - start) / duration;
-            if (timeFraction > 1) {
-                timeFraction = 1;
-                resolve();
-            }
-            else if (timeFraction < 0) timeFraction = 0; 
-
-            const progress = timing(timeFraction);
-
-            draw(progress);
-
-            if (timeFraction < 1) {
-                requestAnimationFrame(animate);
-            }
-        })
-    })
-}
-
-function linear(timeFraction: number): number {
-    return timeFraction;
-}
-
-
-function circ(timeFraction) {
-    return 1 - Math.sin(Math.acos(timeFraction));
-  }
+console.log(new Game());
