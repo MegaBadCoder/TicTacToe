@@ -33,7 +33,7 @@ export class Board {
     }
 
     public assignCell([y, x]: number[], indexShape: number): void {
-        this.playingFieldMatrix[y][x] = indexShape
+        this.playingFieldMatrix[y][x] = indexShapfe
         this.lastMove = [y, x];
     }
 
@@ -65,7 +65,7 @@ export class Board {
         for (let i = 0; i < this.tiles_x; i += 1) {
             const row = [];
             for (let j = 0; j < this.tiles_y; j += 1) {
-                row.push(0);
+                row.push(-1);
             }
             this.playingFieldMatrix.push(row);
         }

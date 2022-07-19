@@ -200,7 +200,6 @@ import { Game } from './Game';
 //             ctx.stroke();
 //         },
 //     })
-//     return true;
 // }
 
 
@@ -271,5 +270,5 @@ import { Game } from './Game';
 // createAPlayingFieldMatrix();
 (function main(): void {
     let game: Game = new Game();
-    game.startNewGame();
+    game.initGame();
 })();
