@@ -1,8 +1,6 @@
 import { Board } from './Board';
 import { transposeMatrix } from './helpers';
-
-const canvas = document.querySelector('#game') as HTMLCanvasElement;
-const ctx = canvas.getContext("2d");
+import { canvas, ctx, startBtn, width, height } from './constants';
 
 export class Game {
     public currentPlayerToc: Boolean = true;
@@ -14,14 +12,17 @@ export class Game {
 
     public initGame() {
         this.Board.assignDimensions(this.sizeMatrices[0]);
-        canvas.addEventListener('click', this.clickOnBoard.bind(this))
+        canvas.addEventListener('click', this.clickOnBoard.bind(this));
+        startBtn.addEventListener('click', this.startNewGame.bind(this));
     }
 
     private startNewGame() {
+        ctx.clearRect(0, 0, width, height);
+        this.currentPlayerToc = true;
         this.Board.assignDimensions(this.sizeMatrices[0]);
     }
 
-    private clickOnBoard(e) {
+    private clickOnBoard(e: Event) {
         const x = Math.floor((e.clientX - canvas.offsetLeft) / this.Board.tile_size);
         const y = Math.floor((e.clientY - canvas.offsetTop) / this.Board.tile_size);
         
@@ -30,16 +31,19 @@ export class Game {
         this.makeAMove([y, x], this.currentPlayerToc ?  0 : 1)
     };
 
-    private makeAMove([y, x]: number[], indexShape: number) {
+    private async makeAMove([y, x]: number[], indexShape: number) {
         this.Board.assignCell([y, x], indexShape);
         this.Board.redrawBoard();
 
         const gameResult = this.checkWin();
+        const { winner, type, index } = gameResult
 
-        if (Object.keys(gameResult).length) {
-
-        } else {
+        // console.log(winner);
+        if (!Object.keys(gameResult).length) {
             this.setNextPlayer();
+        } else if (winner !== undefined) {
+            this.gameStatus = 2;
+            await this.Board.crossOutTheLine(type, index);
         }
     }
 

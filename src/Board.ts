@@ -1,25 +1,17 @@
-const canvas = document.querySelector('#game') as HTMLCanvasElement;
-const ctx = canvas.getContext("2d");
-const startBtn = document.querySelector('#start-new-game-btn') as HTMLCanvasElement;
-const width = canvas.width;
-const height = canvas.height;
-const colors = {
-    grid: "rgb(90, 90, 90)",
-    tic: '#000',
-    tac: '#FF0000',
-}
-
-const lineWidthFigure = 20;
+import { animate, circ } from "./animate";
+import { ctx, width, height, colors, lineWidthFigure } from './constants';
 
 type DrawAFigure = (array: number[]) => void;
 
 export class Board {
+    // TODO Второй тип в матрицах должен быть не номером, а фигурой
     public playingFieldMatrix: number[][];
     public tile_size: number = 0;
     public tiles_x: number = 0;
     public tiles_y: number = 0;
     // TODO: Необходимо проверить можно ли так делать
     private lastMove: [number, number];
+    readonly timeAnimationCross = 500;
     // private lastCell: number;
 
     public assignDimensions(sizeMatrices: number): void {
@@ -33,12 +25,32 @@ export class Board {
     }
 
     public assignCell([y, x]: number[], indexShape: number): void {
-        this.playingFieldMatrix[y][x] = indexShapfe
+        this.playingFieldMatrix[y][x] = indexShape
         this.lastMove = [y, x];
     }
 
     public redrawBoard() {
         this.drawShapesOnTheBoard(true);
+    }
+
+    public async crossOutTheLine(type: string, line: number | undefined) {
+        const actions = {
+            row: async () => {
+                await this.crossOutRow(Number(line));
+            },
+            col: async () => {
+                await this.crossOutCol(Number(line));
+            },
+            rightDown: async () => {
+                await this.crossOutDiagonally(true);
+            },
+            leftDown: async () => {
+                await this.crossOutDiagonally();
+            }
+        }
+        
+        if (type in actions) await actions[type]();
+        
     }
 
     private drawCells() {
@@ -109,5 +121,58 @@ export class Board {
         ctx.moveTo(this.tile_size * (x + 1) - padding, this.tile_size * y + padding);
         ctx.lineTo(this.tile_size * x + padding, this.tile_size * (y + 1) - padding);
         ctx.stroke();
+    }
+
+    private async crossOutRow(indexCol: number) {
+        const y = indexCol * this.tile_size + this.tile_size / 2
+        ctx.strokeStyle = colors.grid; 
+        ctx.lineWidth = 10;
+        ctx.beginPath();
+        ctx.moveTo(0, y - 0.5);
+        await animate({
+            duration: this.timeAnimationCross,
+            timing: circ,
+            draw: (progress: number): void => {
+                ctx.lineTo(width * progress, y - 0.5);
+                ctx.stroke()
+            },
+        });
+    }
+
+    private async crossOutCol(indexCol: number) {
+        const x = indexCol * this.tile_size + this.tile_size / 2
+        ctx.strokeStyle = colors.grid; 
+        ctx.lineWidth = 10;
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+    
+        await animate({
+            duration: this.timeAnimationCross,
+            timing: circ,
+            draw: (progress: number): void => {
+                ctx.lineTo(x, height * progress);
+                ctx.stroke();
+            },
+        })
+    } 
+
+    private async crossOutDiagonally(leftDown: Boolean = false) {
+        const startCoords: number[] = leftDown ? [0, 0] : [width, 0];
+        const endCoords: number[] = leftDown ? [width, height] : [0, height];
+        ctx.strokeStyle = colors.grid; 
+        ctx.lineWidth = 10;
+        ctx.beginPath();
+        ctx.moveTo(startCoords[0], startCoords[1]);
+
+        await animate({
+            duration: this.timeAnimationCross,
+            timing: circ,
+            draw: (progress: number): void => {
+                const x = leftDown ? endCoords[0] * progress : width - width * progress;
+                const y =    endCoords[1] * progress
+                ctx.lineTo(x, y);
+                ctx.stroke();
+            },
+        });   
     }
 }
