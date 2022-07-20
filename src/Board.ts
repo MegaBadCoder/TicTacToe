@@ -5,14 +5,13 @@ type DrawAFigure = (array: number[]) => void;
 
 export class Board {
     // TODO Второй тип в матрицах должен быть не номером, а фигурой
-    public playingFieldMatrix: number[][];
+    public playingFieldMatrix: number[][] = [];
     public tile_size: number = 0;
     public tiles_x: number = 0;
     public tiles_y: number = 0;
     // TODO: Необходимо проверить можно ли так делать
     private lastMove: [number, number];
     readonly timeAnimationCross = 500;
-    // private lastCell: number;
 
     public assignDimensions(sizeMatrices: number): void {
         this.tile_size = width / sizeMatrices;
