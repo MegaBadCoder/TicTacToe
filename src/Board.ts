@@ -1,7 +1,10 @@
-import { animate, circ } from "./animate";
+import { animate, circ, easeOutQuart, easeOutCubic } from "./animate";
 import { ctx, width, height, colors, lineWidthFigure } from './constants';
 
-type DrawAFigure = (array: number[]) => void;
+type DrawAFigure = {
+    // (array: number[], ): void;
+    (array: number[], animate?: boolean) : void;
+}
 
 export class Board {
     // TODO Второй тип в матрицах должен быть не номером, а фигурой
@@ -9,9 +12,10 @@ export class Board {
     public tile_size: number = 0;
     public tiles_x: number = 0;
     public tiles_y: number = 0;
+    public drawingProcess = false;
     // TODO: Необходимо проверить можно ли так делать
-    private lastMove: [number, number];
-    readonly timeAnimationCross = 500;
+    private lastMove: [number, number] = [-1, -1];
+    readonly timeAnimationCross = 300;
 
     public assignDimensions(sizeMatrices: number): void {
         this.tile_size = width / sizeMatrices;
@@ -49,7 +53,6 @@ export class Board {
         }
         
         if (type in actions) await actions[type]();
-        
     }
 
     private drawCells() {
@@ -83,32 +86,67 @@ export class Board {
     }
 
     private drawShapesOnTheBoard(animateTheLast: Boolean = false): void {
+        const [lastMoveY, lastMoveX] = this.lastMove;
+
         for (let i = 0; i < this.playingFieldMatrix.length; i += 1 ) {
             const row = this.playingFieldMatrix[i];
             for (let j = 0; j < row.length; j += 1) {
+                if (animateTheLast && lastMoveY === i && lastMoveX === j) {
+                    break;
+                }
                 if (row[j] >= 0) {
                     [this.drawTic, this.drawToc][row[j]]([j, i]);
                 }
             }
         }
+
+        if (animateTheLast) {
+            [this.drawTic, this.drawToc][this.playingFieldMatrix[lastMoveY][lastMoveX]]([lastMoveX, lastMoveY], true);
+        }
     }
 
-    private drawTic: DrawAFigure = ([x, y]) => {
+    private drawTic: DrawAFigure = ([x, y], animation) => {
         const lineWidthCircle = lineWidthFigure;
         ctx.strokeStyle = colors.tic; 
         const padding = 30;
         x += 1;
         y += 1;
-        ctx.beginPath();
         const radius = this.tile_size / 2; 
         const coordsX = radius * (2 * x - 1);
         const coordsY = radius * (2 * y - 1);
-        ctx.arc(coordsX, coordsY, (radius - lineWidthCircle / 2) - padding, 0, Math.PI * 3);
         ctx.lineWidth = lineWidthCircle;
-        ctx.stroke();
+
+        const draw = (completeness: number): void => {
+            ctx.beginPath();
+            ctx.arc(
+                coordsX, coordsY, 
+                (radius - lineWidthCircle / 2) - padding, 0, 
+                Math.PI * 2 * completeness);
+            ctx.stroke();
+        }
+
+        if (animation) {
+            this.drawingProcess = true;
+
+            animate({
+                duration: 400,
+                timing: (tf: number) => {
+                    // TODO: It's a crutch that needs to be fixed;
+
+                    if (tf === 1) this.drawingProcess = false;
+                    return easeOutQuart(tf);
+                },
+                draw: (progress: number): void => {
+                    draw(progress);
+                    this.drawingProcess = progress !== 1
+                },
+            })
+        } else {
+            draw(1);
+        }
     }
     
-    private drawToc: DrawAFigure = ([x, y]) => {
+    private drawToc: DrawAFigure = ([x, y], animation) => {
         ctx.strokeStyle = colors.tac; 
         const padding = 30;
         ctx.lineWidth = lineWidthFigure;
@@ -120,6 +158,19 @@ export class Board {
         ctx.moveTo(this.tile_size * (x + 1) - padding, this.tile_size * y + padding);
         ctx.lineTo(this.tile_size * x + padding, this.tile_size * (y + 1) - padding);
         ctx.stroke();
+
+        if (animation) {
+
+        } else {
+            ctx.beginPath();
+            ctx.moveTo(this.tile_size * x + padding, this.tile_size * y + padding);
+            ctx.lineTo(this.tile_size * (x + 1) - padding, this.tile_size * (y + 1) - padding);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(this.tile_size * (x + 1) - padding, this.tile_size * y + padding);
+            ctx.lineTo(this.tile_size * x + padding, this.tile_size * (y + 1) - padding);
+            ctx.stroke();
+        }
     }
 
     private async crossOutRow(indexCol: number) {
@@ -128,6 +179,7 @@ export class Board {
         ctx.lineWidth = 10;
         ctx.beginPath();
         ctx.moveTo(0, y - 0.5);
+
         await animate({
             duration: this.timeAnimationCross,
             timing: circ,
@@ -147,7 +199,7 @@ export class Board {
     
         await animate({
             duration: this.timeAnimationCross,
-            timing: circ,
+            timing: easeOutCubic,
             draw: (progress: number): void => {
                 ctx.lineTo(x, height * progress);
                 ctx.stroke();

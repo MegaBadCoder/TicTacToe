@@ -6,7 +6,7 @@ export class Game {
     public currentPlayerToc: Boolean = true;
     private Board = new Board();
     public gameStatus: number = 0;
-   
+    readonly gameStatusNames: string[] = ['process', 'finished', 'frozen'];
     readonly sizeMatrices: number[] = [3, 5, 7];
     public winner: number = -1;
 
@@ -18,6 +18,7 @@ export class Game {
 
     private startNewGame() {
         ctx.clearRect(0, 0, width, height);
+        this.gameStatus = 0;
         this.currentPlayerToc = true;
         this.Board.assignDimensions(this.sizeMatrices[0]);
     }
@@ -26,7 +27,7 @@ export class Game {
         const x = Math.floor((e.clientX - canvas.offsetLeft) / this.Board.tile_size);
         const y = Math.floor((e.clientY - canvas.offsetTop) / this.Board.tile_size);
         
-        if (this.gameStatus === 2 || this.Board.playingFieldMatrix[y][x] >= 0) return;
+        if ([3,2].includes(this.gameStatus) || this.Board.playingFieldMatrix[y][x] >= 0 || this.Board.drawingProcess) return;
 
         this.makeAMove([y, x], this.currentPlayerToc ?  0 : 1)
     };
@@ -35,16 +36,24 @@ export class Game {
         this.Board.assignCell([y, x], indexShape);
         this.Board.redrawBoard();
 
-        const gameResult = this.checkWin();
-        const { winner, type, index } = gameResult
+        const interval = setInterval(async () => {
+            if (this.Board.drawingProcess) return;
+            
 
-        // console.log(winner);
-        if (!Object.keys(gameResult).length) {
-            this.setNextPlayer();
-        } else if (winner !== undefined) {
-            this.gameStatus = 2;
-            await this.Board.crossOutTheLine(type, index);
-        }
+            const gameResult = this.checkWin();
+            const { winner, type, index } = gameResult
+
+            if (!Object.keys(gameResult).length) {
+                this.setNextPlayer();
+            } else if (winner !== undefined) {
+                this.gameStatus = 2;
+                await this.Board.crossOutTheLine(type, index);
+            }
+            
+            clearInterval(interval);
+        })
+
+        
     }
 
     private setNextPlayer() {

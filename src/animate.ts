@@ -29,3 +29,11 @@ export function linear(timeFraction: number): number {
 export function circ(timeFraction) {
     return 1 - Math.sin(Math.acos(timeFraction));
 }
+
+export function easeOutQuart(x: number): number {
+    return 1 - Math.pow(1 - x, 4);
+}
+
+export function easeOutCubic(x: number): number {
+    return 1 - Math.pow(1 - x, 3);
+}
