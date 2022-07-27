@@ -1,4 +1,4 @@
-export function animate({ duration, draw, timing }) {
+export function animate({ duration, draw, timing }): Promise<void> {
     return new Promise((resolve) => {
         const start = performance.now();
 

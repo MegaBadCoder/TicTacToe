@@ -147,29 +147,51 @@ export class Board {
     }
     
     private drawToc: DrawAFigure = ([x, y], animation) => {
+        const draw = (starCoords: number[], finCoords: number[]): void => {
+            ctx.beginPath();
+            ctx.moveTo(starCoords[0], starCoords[1]);
+            ctx.lineTo(finCoords[0], finCoords[1]);
+            ctx.stroke();
+        }
+        
         ctx.strokeStyle = colors.tac; 
         const padding = 30;
         ctx.lineWidth = lineWidthFigure;
-        ctx.beginPath();
-        ctx.moveTo(this.tile_size * x + padding, this.tile_size * y + padding);
-        ctx.lineTo(this.tile_size * (x + 1) - padding, this.tile_size * (y + 1) - padding);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(this.tile_size * (x + 1) - padding, this.tile_size * y + padding);
-        ctx.lineTo(this.tile_size * x + padding, this.tile_size * (y + 1) - padding);
-        ctx.stroke();
+
+        const startX = this.tile_size * x + padding; 
+        const startY = this.tile_size * y + padding;
+        const finY = this.tile_size * (y + 1) - padding;
+        const startX2 = this.tile_size * (x + 1) - padding;
 
         if (animation) {
+            this.drawingProcess = true;
+            animate({
+                duration: 400,
+                timing: (tf: number) => {
+                    // TODO: It's a crutch that needs to be fixed;
+                    if (tf === 1) this.drawingProcess = false;
+                    return easeOutQuart(tf);
+                },
+                draw: (progress: number): void => {
+                    
+                    const diffY = this.tile_size - 2 * padding;
+                    const diffX = Math.abs(2 * padding  - this.tile_size);
+                    const progressY = startY + diffY * progress;
 
+                    ctx.clearRect(
+                        this.tile_size * x + 2,
+                        this.tile_size * y + 2, 
+                        this.tile_size - 3, 
+                        this.tile_size - 3
+                    );
+
+                    draw([startX, startY], [startX + diffX * progress, progressY]);
+                    draw([startX2, startY], [startX2 - diffX * progress, progressY]);
+                },
+            })
         } else {
-            ctx.beginPath();
-            ctx.moveTo(this.tile_size * x + padding, this.tile_size * y + padding);
-            ctx.lineTo(this.tile_size * (x + 1) - padding, this.tile_size * (y + 1) - padding);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(this.tile_size * (x + 1) - padding, this.tile_size * y + padding);
-            ctx.lineTo(this.tile_size * x + padding, this.tile_size * (y + 1) - padding);
-            ctx.stroke();
+            draw([startX, startY], [startX2, finY])
+            draw([startX2, startY], [startX, finY])
         }
     }
 

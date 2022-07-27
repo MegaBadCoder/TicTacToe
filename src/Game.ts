@@ -11,7 +11,7 @@ export class Game {
     public winner: number = -1;
 
     public initGame() {
-        this.Board.assignDimensions(this.sizeMatrices[0]);
+        this.Board.assignDimensions(this.sizeMatrices[1]);
         canvas.addEventListener('click', this.clickOnBoard.bind(this));
         startBtn.addEventListener('click', this.startNewGame.bind(this));
     }
