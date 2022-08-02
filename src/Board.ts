@@ -21,8 +21,6 @@ export class Board {
         this.tile_size = width / sizeMatrices;
         this.tiles_x = width / this.tile_size;
         this.tiles_y = height / this.tile_size; 
-
-
         this.drawCells();
         this.createAPlayingFieldMatrix();
     }
@@ -173,10 +171,10 @@ export class Board {
                     return easeOutQuart(tf);
                 },
                 draw: (progress: number): void => {
-                    
-                    const diffY = this.tile_size - 2 * padding;
-                    const diffX = Math.abs(2 * padding  - this.tile_size);
-                    const progressY = startY + diffY * progress;
+                    const diffXY = this.tile_size - 2 * padding;
+                    const progressY = startY + diffXY * progress;
+                    const progressX1 = startX + diffXY * progress;
+                    const progressX2 = startX2 - diffXY * progress
 
                     ctx.clearRect(
                         this.tile_size * x + 2,
@@ -184,9 +182,8 @@ export class Board {
                         this.tile_size - 3, 
                         this.tile_size - 3
                     );
-
-                    draw([startX, startY], [startX + diffX * progress, progressY]);
-                    draw([startX2, startY], [startX2 - diffX * progress, progressY]);
+                    draw([startX, startY], [progressX1, progressY]);
+                    draw([startX2, startY], [progressX2, progressY]);
                 },
             })
         } else {

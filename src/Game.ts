@@ -1,4 +1,5 @@
 import { Board } from './Board';
+import { Modal } from './modal'
 import { transposeMatrix } from './helpers';
 import { canvas, ctx, startBtn, width, height } from './constants';
 
@@ -8,10 +9,13 @@ export class Game {
     public gameStatus: number = 0;
     readonly gameStatusNames: string[] = ['process', 'finished', 'frozen'];
     readonly sizeMatrices: number[] = [3, 5, 7];
+    private introModal = new Modal(this.generateIntro())
     public winner: number = -1;
 
     public initGame() {
-        this.Board.assignDimensions(this.sizeMatrices[1]);
+        this.introModal.showModal();
+
+        // this.Board.assignDimensions(this.sizeMatrices[0]);
         canvas.addEventListener('click', this.clickOnBoard.bind(this));
         startBtn.addEventListener('click', this.startNewGame.bind(this));
     }
@@ -26,7 +30,7 @@ export class Game {
     private clickOnBoard(e: Event) {
         const x = Math.floor((e.clientX - canvas.offsetLeft) / this.Board.tile_size);
         const y = Math.floor((e.clientY - canvas.offsetTop) / this.Board.tile_size);
-        
+
         if ([3,2].includes(this.gameStatus) || this.Board.playingFieldMatrix[y][x] >= 0 || this.Board.drawingProcess) return;
 
         this.makeAMove([y, x], this.currentPlayerToc ?  0 : 1)
@@ -52,6 +56,7 @@ export class Game {
             
             clearInterval(interval);
         })
+
 
         
     }
@@ -111,5 +116,33 @@ export class Game {
         }
 
         return {};
+    }
+
+    private generateIntro() {
+        const introBlock = document.createElement('div');
+        const header = document.createElement('h2');
+        
+        introBlock.className = 'intro-block';
+        header.textContent = 'Choose the size of the matrix'; 
+        const elements = this.sizeMatrices.map((item, i) => {
+            const button = document.createElement('button');
+            button.classList.add('intro-block__btn');
+            button.textContent = `${item}X${item}`
+            button.dataset.id = i;
+            button.onclick = this.clickStartBtn.bind(this);
+            return button;
+        })
+
+        elements.unshift(header);
+
+        elements.forEach(el => introBlock.appendChild(el));
+        return introBlock;
+    }
+
+    private clickStartBtn(e) {
+        const sizeMatrices = this.sizeMatrices[Number(e.target.dataset.id)];
+        this.Board.assignDimensions(sizeMatrices);
+        
+        this.introModal.removeModal();
     }
 }
