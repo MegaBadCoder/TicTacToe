@@ -58,3 +58,30 @@ body {
         margin-left: auto;
     }
 }
+
+.intro-block {
+    display: flex;
+    flex-direction: column;
+
+    &__btn {
+        margin-bottom: 15px;
+        min-height: 34px;
+        border-radius: 8px;
+        border: none;
+        font-size: 18px;
+        font-weight: bold;
+        color: white;
+        background-image: linear-gradient(to right, #4b6cb7 0%, #182848 51%, #4b6cb7 100%);
+        cursor: pointer;
+        &:hover {
+            background-position: right center;
+            // color: #fff;
+            text-decoration: none;
+        }
+    }
+}
+
+.hide {
+    display: none;
+}
+

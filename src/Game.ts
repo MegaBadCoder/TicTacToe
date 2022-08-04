@@ -3,12 +3,14 @@ import { Modal } from './modal'
 import { transposeMatrix } from './helpers';
 import { canvas, ctx, startBtn, width, height } from './constants';
 
+type Figure = 1 | -1 | 0; 
+
 export class Game {
     public currentPlayerToc: Boolean = true;
     private Board = new Board();
     public gameStatus: number = 0;
     readonly gameStatusNames: string[] = ['process', 'finished', 'frozen'];
-    readonly sizeMatrices: number[] = [3, 5, 7];
+    readonly sizeMatrices: number[] = [3, 5];
     private introModal = new Modal(this.generateIntro())
     public winner: number = -1;
 
@@ -24,10 +26,13 @@ export class Game {
         ctx.clearRect(0, 0, width, height);
         this.gameStatus = 0;
         this.currentPlayerToc = true;
-        this.Board.assignDimensions(this.sizeMatrices[0]);
+
+        this.introModal.showModal();
+        this.showHideStartBtn();
+        // this.Board.assignDimensions(this.sizeMatrices[0]);
     }
 
-    private clickOnBoard(e: Event) {
+    private clickOnBoard(e) {
         const x = Math.floor((e.clientX - canvas.offsetLeft) / this.Board.tile_size);
         const y = Math.floor((e.clientY - canvas.offsetTop) / this.Board.tile_size);
 
@@ -36,36 +41,41 @@ export class Game {
         this.makeAMove([y, x], this.currentPlayerToc ?  0 : 1)
     };
 
-    private async makeAMove([y, x]: number[], indexShape: number) {
+    private async makeAMove([y, x]: number[], indexShape: Figure) {
         this.Board.assignCell([y, x], indexShape);
         this.Board.redrawBoard();
 
-        const interval = setInterval(async () => {
-            if (this.Board.drawingProcess) return;
-            
+        const gameResult = this.checkWin();
+        const { winner, type, index } = gameResult
 
-            const gameResult = this.checkWin();
-            const { winner, type, index } = gameResult
+        await this.checkDrawingProcess();
 
-            if (!Object.keys(gameResult).length) {
-                this.setNextPlayer();
-            } else if (winner !== undefined) {
-                this.gameStatus = 2;
-                await this.Board.crossOutTheLine(type, index);
-            }
-            
-            clearInterval(interval);
-        })
-
-
-        
+        if (!Object.keys(gameResult).length) {
+            this.setNextPlayer();
+        } else if (winner !== undefined && winner !== -1) {
+            this.gameStatus = 2;
+            await this.Board.crossOutTheLine(String(type), index);
+            this.showWinner(winner);
+        } else if (winner === -1){
+            this.showWinner(winner);
+        }
     }
 
+    private checkDrawingProcess() {
+        return new Promise<void>(resolve => {
+            const interval = setInterval(() => {
+                if (!this.Board.drawingProcess) {
+                    clearInterval(interval);
+                    resolve();
+                };
+            }, 10);  
+        })
+    } 
     private setNextPlayer() {
         this.currentPlayerToc = !this.currentPlayerToc;
     }
 
-    private checkWin() {
+    private checkWin(): { winner?: Figure, type?: string, index?: number  } {
         const checkRow = (matrix: number[]): Boolean => matrix.every((el: number) => el === matrix[0]) && matrix[0] !== -1;
 
         const { playingFieldMatrix } = this.Board; 
@@ -91,8 +101,8 @@ export class Game {
             }
         }
 
-        const diagonalRightDown: number[] = [];
-        const diagonalLeftDown: number[] = []
+        const diagonalRightDown: Figure[] = [];
+        const diagonalLeftDown: Figure[] = []
 
         
         for (let i = 0; i < playingFieldMatrix.length; i +=1) {
@@ -115,20 +125,31 @@ export class Game {
             }
         }
 
-        return {};
+        for (let i = 0; i < playingFieldMatrix.length; i += 1) {
+            for (let j = 0; j < playingFieldMatrix[i].length; j += 1) {
+                if (playingFieldMatrix[i][j] === -1) {
+                    return {};
+                }
+            }
+        }
+
+        return { winner: -1 }
+
     }
 
     private generateIntro() {
+        const mainBlockClassName = 'intro-block';
         const introBlock = document.createElement('div');
         const header = document.createElement('h2');
         
-        introBlock.className = 'intro-block';
+        introBlock.className = mainBlockClassName;
         header.textContent = 'Choose the size of the matrix'; 
-        const elements = this.sizeMatrices.map((item, i) => {
+        header.className = `${mainBlockClassName}__header`
+        const elements: HTMLElement[] = this.sizeMatrices.map((item, i) => {
             const button = document.createElement('button');
-            button.classList.add('intro-block__btn');
+            button.classList.add(`${mainBlockClassName}__btn`);
             button.textContent = `${item}X${item}`
-            button.dataset.id = i;
+            button.dataset.id = String(i);
             button.onclick = this.clickStartBtn.bind(this);
             return button;
         })
@@ -144,5 +165,35 @@ export class Game {
         this.Board.assignDimensions(sizeMatrices);
         
         this.introModal.removeModal();
+        this.showHideStartBtn();
+    }
+    
+    private showHideStartBtn() {
+        startBtn.classList.toggle("hide");
+    }
+
+    private showWinner(winner: Figure) {
+        const introBlock = document.createElement('div');
+        introBlock.className = 'intro-block';
+        const winnerName = winner === -1 ? 'Dead heat' : ['Toe', 'Tic Tac'][winner];
+        const winnerTmpl = (word: string) => `Winner: ${word}`;
+
+        const header = document.createElement('h2');
+        const btn = document.createElement('button');
+        btn.textContent = 'START OVER';
+        const modal = new Modal(introBlock);
+        btn.onclick = () => {
+            modal.removeModal();
+            this.startNewGame();
+        }
+        header.textContent = winnerName;
+        
+        [header, btn].forEach(_ => {
+            introBlock.appendChild(_);
+        })
+
+        
+        modal.showModal();
+        // this.showHideStartBtn();
     }
 }

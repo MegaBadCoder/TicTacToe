@@ -5,10 +5,11 @@ type DrawAFigure = {
     // (array: number[], ): void;
     (array: number[], animate?: boolean) : void;
 }
+type Figure = 1 | -1 | 0; 
 
 export class Board {
     // TODO Второй тип в матрицах должен быть не номером, а фигурой
-    public playingFieldMatrix: number[][] = [];
+    public playingFieldMatrix: Figure[][] = [];
     public tile_size: number = 0;
     public tiles_x: number = 0;
     public tiles_y: number = 0;
@@ -25,7 +26,7 @@ export class Board {
         this.createAPlayingFieldMatrix();
     }
 
-    public assignCell([y, x]: number[], indexShape: number): void {
+    public assignCell([y, x]: number[], indexShape: Figure): void {
         this.playingFieldMatrix[y][x] = indexShape
         this.lastMove = [y, x];
     }
