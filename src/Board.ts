@@ -1,20 +1,13 @@
+import { Figure, DrawAFigure } from './types';
 import { animate, circ, easeOutQuart, easeOutCubic } from "./animate";
 import { ctx, width, height, colors, lineWidthFigure } from './constants';
 
-type DrawAFigure = {
-    // (array: number[], ): void;
-    (array: number[], animate?: boolean) : void;
-}
-type Figure = 1 | -1 | 0; 
-
 export class Board {
-    // TODO Второй тип в матрицах должен быть не номером, а фигурой
     public playingFieldMatrix: Figure[][] = [];
     public tile_size: number = 0;
     public tiles_x: number = 0;
     public tiles_y: number = 0;
     public drawingProcess = false;
-    // TODO: Необходимо проверить можно ли так делать
     private lastMove: [number, number] = [-1, -1];
     readonly timeAnimationCross = 300;
 
@@ -76,7 +69,7 @@ export class Board {
     private createAPlayingFieldMatrix() {
         this.playingFieldMatrix = [];
         for (let i = 0; i < this.tiles_x; i += 1) {
-            const row = [];
+            const row:Figure[] = [];
             for (let j = 0; j < this.tiles_y; j += 1) {
                 row.push(-1);
             }

@@ -1,9 +1,8 @@
 import { Board } from './Board';
 import { Modal } from './modal'
 import { transposeMatrix } from './helpers';
-import { canvas, ctx, startBtn, width, height } from './constants';
-
-type Figure = 1 | -1 | 0; 
+import { canvas, ctx, startBtn, width, height, introBlockClassName } from './constants';
+import { Figure } from './types';
 
 export class Game {
     public currentPlayerToc: Boolean = true;
@@ -17,7 +16,6 @@ export class Game {
     public initGame() {
         this.introModal.showModal();
 
-        // this.Board.assignDimensions(this.sizeMatrices[0]);
         canvas.addEventListener('click', this.clickOnBoard.bind(this));
         startBtn.addEventListener('click', this.startNewGame.bind(this));
     }
@@ -29,7 +27,6 @@ export class Game {
 
         this.introModal.showModal();
         this.showHideStartBtn();
-        // this.Board.assignDimensions(this.sizeMatrices[0]);
     }
 
     private clickOnBoard(e) {
@@ -47,12 +44,11 @@ export class Game {
 
         const gameResult = this.checkWin();
         const { winner, type, index } = gameResult
-
+        
+        this.setNextPlayer();
         await this.checkDrawingProcess();
 
-        if (!Object.keys(gameResult).length) {
-            this.setNextPlayer();
-        } else if (winner !== undefined && winner !== -1) {
+        if (winner !== undefined && winner !== -1) {
             this.gameStatus = 2;
             await this.Board.crossOutTheLine(String(type), index);
             this.showWinner(winner);
@@ -138,7 +134,7 @@ export class Game {
     }
 
     private generateIntro() {
-        const mainBlockClassName = 'intro-block';
+        const mainBlockClassName = introBlockClassName;
         const introBlock = document.createElement('div');
         const header = document.createElement('h2');
         
@@ -174,26 +170,26 @@ export class Game {
 
     private showWinner(winner: Figure) {
         const introBlock = document.createElement('div');
-        introBlock.className = 'intro-block';
-        const winnerName = winner === -1 ? 'Dead heat' : ['Toe', 'Tic Tac'][winner];
+        introBlock.className = introBlockClassName;
         const winnerTmpl = (word: string) => `Winner: ${word}`;
-
+        const winnerName = winner === -1 ? 'Dead heat' : winnerTmpl(['Toe', 'Tic Tac'][winner]);
+        
         const header = document.createElement('h2');
         const btn = document.createElement('button');
+        btn.classList.add(`${introBlockClassName}__btn`);
         btn.textContent = 'START OVER';
-        const modal = new Modal(introBlock);
         btn.onclick = () => {
             modal.removeModal();
             this.startNewGame();
         }
+
+        const modal = new Modal(introBlock);
         header.textContent = winnerName;
         
         [header, btn].forEach(_ => {
             introBlock.appendChild(_);
         })
-
-        
+   
         modal.showModal();
-        // this.showHideStartBtn();
     }
 }

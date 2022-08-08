@@ -1,5 +1,5 @@
 export const canvas = document.querySelector('#game') as HTMLCanvasElement;
-export const ctx = canvas.getContext("2d");
+export const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 export const startBtn = document.querySelector('#start-new-game-btn') as HTMLCanvasElement;
 export const width = canvas.width;
 export const height = canvas.height;
@@ -9,3 +9,4 @@ export const colors = {
     tac: '#FF0000',
 }
 export const lineWidthFigure = 20;
+export const introBlockClassName =  'intro-block';
